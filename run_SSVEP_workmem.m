@@ -47,7 +47,7 @@ p.stim.con_repeats      = [85 85 85 85 85 85];  % trial number/repeats for each 
 p.stim.con_repeats_catch= [15 15 15 15 15 15];  % trial number/repeats for each eventnum and condition
 p.stim.trialnum_train   = [15];
 p.stim.time_postcuetrack= [1.5 2];          % post.cue tracking time in s [upper lower]
-p.stim.time_postcuetrack_catch = [0.75 1.5]; % post.cue tracking time in s [upper lower] for catch trials
+p.stim.time_postcuetrack_catch = [0.7 1.5]; % post.cue tracking time in s [upper lower] for catch trials
 p.stim.time_precue      = [1.5 2];          % precue time in s; [upper lower] for randomization
 p.stim.time_retention   = [1 1];            % time for retention period time in s; [upper lower] for randomization
 p.stim.time_response    = [1 2];            % time range of response time window [min max]
@@ -56,6 +56,13 @@ p.stim.angles           = [0 45 90 135];    % possible rotations of squares
 p.stim.event.rotations  = [-45 45];         % possible rotations of squares for events
 p.stim.blocknum         = 20;               % number of blocks
 p.stim.ITI              = [1 1];            % ITI range in seconds
+
+% pre-cue events
+p.stim.precue_event.num         = [0 0 0 1]; % ratio of no precue-events (0) and precue-events(1); set 0 to turn precue-events off
+p.stim.precue_event.targets     = [1 3];     % defines which are the target events: 1 - left shorter, 2 - left longer, 3 - right shorter, 4 - right longer
+p.stim.precue_event.length      = 0.15;      % length of precue-event in s              
+p.stim.precue_event.min_onset   = 0.3;       % min time before precue-event onset in s
+p.stim.precue_event.min_offset  = 0.4;       % min offset from precue-event end to end of trial in s
 
 
 % introduce RDK structure
@@ -69,6 +76,8 @@ RDK.RDK(1).mov_speed    = 1;                            % movement speed in pixe
 RDK.RDK(1).mov_dir      = [0 1; 0 -1; -1 0; 1 0];       % movement direction  [0 1; 0 -1; -1 0; 1 0] = up, down, left, right
 RDK.RDK(1).dot_size     = [40 10];                      % size of rectangles
 RDK.RDK(1).shape        = 1;                            % 1 = square RDK; 0 = ellipse/circle RDK;
+RDK.RDK(1).id           = 1;                            % identifier for RDK
+
 
 p.stim.pos_shift        = [-255 0; 255 0];              % position shift in pixel for stimuli in periphery [255 = 7.8°] either left or right
 p.stim.freqs            = [17 20 23 26];                % possible frequencies of different RDKs
@@ -93,8 +102,9 @@ p.trig.rec_stop         = 254;                  % trigger to stop recording
 p.trig.tr_start         = 77;                   % trial start; main experiment
 p.trig.tr_con_cue       = [1 2 3 4 5 6 ]*10;    % condition type for cue presentation
 p.trig.tr_con_retent    = p.trig.tr_con_cue+1;  % condition type for start of retention period
-p.trig.tr_con_probematch= p.trig.tr_con_cue+5;  % condition type for start of retention period | match
-p.trig.tr_con_probechange= p.trig.tr_con_cue+6; % condition type for start of retention period | change
+p.trig.tr_con_event     = p.trig.tr_con_cue+5;  % condition type for start of retention period | match
+p.trig.tr_con_event(2,:)= p.trig.tr_con_cue+6;  % condition type for start of retention period | change
+p.trig.tr_precue_event  = [81 82];              % pre-cue event target or distractor
 p.trig.button           = [155 156];            % button press (match vs nonmatch)
 
 % possible condition triggers:
@@ -125,6 +135,7 @@ end
 %% Screen init
 ps.input = struct('ScrNum',p.scr_num,'RefRate',p.scr_refrate,'PRPXres',p.scr_res,'BckGrCol',p.scr_color,'PRPXmode',2);
 [~, ps.screensize, ps.xCenter, ps.yCenter, ps.window, ps.framerate, ps.RespDev, ps.keymap] = PTExpInit_GLSL(ps.input,1);
+% ps.xCenter = 1920/2; ps.yCenter=1080/2;
 
 % some initial calculations
 % fixation cross
@@ -136,9 +147,14 @@ p.crs.bars = [-p.crs.half p.crs.half 0 0; 0 0 -p.crs.half p.crs.half];
 ps.shift = [-ps.xCenter/2, -ps.yCenter/2; ps.xCenter/2, -ps.yCenter/2;... % shifts to four quadrants: upper left, upper right, lower left, lower right
     -ps.xCenter/2, ps.yCenter/2; ps.xCenter/2, ps.yCenter/2];
 
-p.crs.lines = [];
-for i_quad=1:p.scr_imgmultipl
-    p.crs.lines = cat(2, p.crs.lines, [p.crs.bars(1,:)+ps.shift(i_quad,1); p.crs.bars(2,:)+ps.shift(i_quad,2)]); %array with start and end points for the fixation cross lines, for all four quadrants
+p.crs.rects = zeros(4,p.scr_imgmultipl);
+baserect = [0 0 p.crs.size p.crs.size*2 + p.crs.width-1];
+if p.scr_imgmultipl > 1
+    for rect = 1:p.scr_imgmultipl
+        p.crs.rects(:,rect) = CenterRectOnPoint(baserect,ps.xCenter+ps.shift(rect,1),ps.yCenter+ps.shift(rect,2));
+    end
+else
+    p.crs.rects = CenterRectOnPoint(baserect, ps.xCenter, ps.yCenter);
 end
 
 %% keyboard and ports setup ???
@@ -177,8 +193,16 @@ for i_pos = 1:size(p.stim.pos_shift,1)
     [RDK.RDK(p.stim.RDKpos_shifts==i_pos).centershift] = deal(p.stim.pos_shift(i_pos,:));
 end
 
+% assign id
+for i_rdk = 1:numel(RDK.RDK)
+    RDK.RDK(i_rdk).id = i_rdk;
+end
+
 % initialize blank variables
 timing = []; button_presses = []; resp = []; randmat = [];
+
+% make fixation "cross" textures
+% [p.FixTex] = MakeFixationTextures(p,ps,RDK);
 
 %% initial training
 if p.flag_training
@@ -229,7 +253,7 @@ randmat.experiment = rand_SSVEP_workmem(p, RDK,  0);    % randomization
 for i_bl = p.flag_block:p.stim.blocknum
     % start experiment
     [timing.experiment{i_bl},button_presses.experiment{i_bl},resp.experiment{i_bl}] = ...
-        pres_FShift_PerIrr(p, ps, key, RDK, randmat.experiment, i_bl,0);
+        pres_SSVEP_workmem(p, ps, key, RDK, randmat.experiment, i_bl,0);
     % save logfiles
     save(sprintf('%s%s',p.log.path,p.filename),'timing','button_presses','resp','randmat','p', 'RDK')
           
