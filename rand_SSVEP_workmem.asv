@@ -44,9 +44,8 @@ end
 
 % randomize condition
 if flag_training~=0 % training
-    t.mat = [repmat(p.stim.condition,1,floor(conmat.totaltrials/numel(p.stim.condition))) ...
-        randsample(p.stim.condition,mod(conmat.totaltrials, numel(p.stim.condition)))];
-    conmat.mats.condition = t.mat(randsample(numel(t.mat),numel(t.mat)));
+    t.mat = [repmat(p.stim.condition,1,floor(conmat.totaltrials/numel(p.stim.condition))) randsample(p.stim.condition,mod(numel(p.stim.condition)))
+    conmat.mats.condition = randsample(p.stim.condition,conmat.totaltrials,true)
 else
     conmat.mats.condition = [ ... % for regular and catch trials create con labels according to repetition parameter
         cell2mat(arrayfun(@(x,y) repmat(x,1,y), p.stim.condition, p.stim.con_repeats, 'UniformOutput', false)), ...

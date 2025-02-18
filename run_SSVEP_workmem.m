@@ -45,7 +45,7 @@ p.stim.con_targstim     = [3 3 6 6 3 3];
 p.stim.con_diststim     = [3 3 0 0 0 0];
 p.stim.con_repeats      = [85 85 85 85 85 85];  % trial number/repeats for each eventnum and condition
 p.stim.con_repeats_catch= [15 15 15 15 15 15];  % trial number/repeats for each eventnum and condition
-p.stim.trialnum_train   = [15];
+p.stim.trialnum_train   = [12];
 p.stim.time_postcuetrack= [1.5 2];          % post.cue tracking time in s [upper lower]
 p.stim.time_postcuetrack_catch = [0.7 1.5]; % post.cue tracking time in s [upper lower] for catch trials
 p.stim.time_precue      = [1.5 2];          % precue time in s; [upper lower] for randomization
@@ -222,9 +222,9 @@ if p.flag_training
     while flag_trainend == 0 % do training until ended
         %rand('state',p.sub*i_bl) % determine randstate
         rng(p.sub*i_bl,'v4')
-        randmat.training{i_bl} = rand_FShift_PerIrr(p, RDK,  1);
+        randmat.training{i_bl} = rand_SSVEP_workmem(p, RDK,  1);
         [timing.training{i_bl},button_presses.training{i_bl},resp.training{i_bl}] = ...
-            pres_FShift_PerIrr(p, ps, key, RDK, randmat.training{i_bl}, i_bl,1);
+            pres_SSVEP_workmem(p, ps, key, RDK, randmat.training{i_bl}, i_bl,1);
         save(sprintf('%s%s',p.log.path,p.filename),'timing','button_presses','resp','randmat','p', 'RDK')
         pres_feedback(resp.training{i_bl},p,ps, key,RDK)
                
