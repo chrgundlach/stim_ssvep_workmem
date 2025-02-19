@@ -32,8 +32,7 @@ RDKin.crs = p.crs;
 
 %% create texture of rectangle
 % create a white rectangle texture
-tx.rectangletex = zeros(RDK.RDK(1).dot_size+2);
-tx.rectangletex(2:end-1,2:end-1) = ones(RDK.RDK(1).dot_size);
+tx.rectangletex = ones(RDK.RDK(1).dot_size);
 
 % make it a texture
 tx.rectTexture = Screen('MakeTexture', ps.window, tx.rectangletex);
@@ -119,11 +118,12 @@ for i_tr = 1:numel(trialindex)
     % from dotmat to rectmat (required for drawing of rectangles)
     rectmat = nan([4 size(dotmat,2:3)]);
     for i_rect = 1:size(dotmat,2)
-%         rectmat(:,i_rect,:) = ...
-%             CenterRectOnPointd([ps.center RDK.RDK(1).dot_size], squeeze(dotmat(1,i_rect,:)),squeeze(dotmat(2,i_rect,:)))';
         rectmat(:,i_rect,:) = ...
-            CenterRectOnPointd([1920 1080 RDK.RDK(1).dot_size], squeeze(dotmat(1,i_rect,:)),squeeze(dotmat(2,i_rect,:)))';
+            CenterRectOnPointd([0 0 RDK.RDK(1).dot_size], squeeze(dotmat(1,i_rect,:)),squeeze(dotmat(2,i_rect,:)))';
+        % rectmat(:,i_rect,:) = ...
+        %     CenterRectOnPointd([1920 1080 RDK.RDK(1).dot_size], squeeze(dotmat(1,i_rect,:)),squeeze(dotmat(2,i_rect,:)))';
     end
+    rectmat = rectmat + [ps.xCenter; ps.yCenter; ps.xCenter; ps.yCenter];
     
     % total frames
     totalframes = frames.flips;
@@ -261,6 +261,8 @@ for i_tr = 1:numel(trialindex)
 
         % fixation cross
         Screen('DrawTextures', ps.window, crossmat(i_fl), [], p.crs.rects);
+    %     Screen('Flip', ps.window, 0);
+    % end
         
         %% start trigger schedule and start listening to response device
         if i_fl == 1 % send the trigger with the start of the 1st flip
