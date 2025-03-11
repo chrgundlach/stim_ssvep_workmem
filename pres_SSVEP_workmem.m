@@ -420,7 +420,11 @@ for i_tr = 1:numel(trialindex)
     t.idx = find(t.presses>=t.respwin(:,1) & t.presses<=t.respwin(:,2));
     
     % not in any response window? --> miss; no reaction time
-    if ~any(t.idx,"all")
+    if resp(i_tr).precue_eventnum < 1
+        resp(i_tr).precue_event_response_type = 'noevent';
+        % no reaction time
+        resp(i_tr).precue_event_response_RT = nan;
+    elseif ~any(t.idx,"all") & resp(i_tr).precue_eventnum == 1
         resp(i_tr).precue_event_response_type = 'miss';
         % no reaction time
         resp(i_tr).precue_event_response_RT = nan;

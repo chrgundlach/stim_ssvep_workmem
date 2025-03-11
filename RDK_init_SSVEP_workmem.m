@@ -36,7 +36,7 @@ function [colmat,dotmat,dotsize,rdkidx,frames,varargout] = RDK_init_SSVEP_workme
 %                   - load('RDK_Init_example_input.mat')
 %                   - [colmat,dotmat,dotsize,rdkidx,frames] = RDK_init(RDKin.scr,RDKin.Propixx,RDKin.RDK,RDKin.trial,RDKin.crs);
 %                   - [colmat,dotmat,dotsize,rdkidx,frames] = RDK_init(RDKin_adj.scr,RDKin_adj.Propixx,RDKin_adj.RDK,RDKin_adj.trial,RDKin_adj.crs);
-    
+
 % M. Dotzer, C. Gundlach [2017, 2018, 2023, 2025]
 % v20231012:
 %       - don't allow stimuli to be presented overlappingly
@@ -72,14 +72,14 @@ lummat  = [];
 
 %% for color and flicker information
 for r = 1:numel(RDK.RDK)
-    
+
     % do classical SSVEP or broadband flicker stimulation?
     switch RDK.RDK(r).flicker_type
         case 'SSVEP'
-            
+
             % define on frames
             onframes = scr.refrate/RDK.RDK(r).freq/2; %number of "on"-frames
-            
+
             % setup color matrix sync on cue
             if ~isfield(trial, 'cue') % check for at certain frame (shifting design) vs cued befor trial design
                 fr_cue = 1;
@@ -89,7 +89,7 @@ for r = 1:numel(RDK.RDK)
                     fr_cue = trial.cue;
                 end
             end
-            
+
             % find number of decimals for frequency to create vector that ends with full cycle (for frequencies with decimal point)
             if mod(RDK.RDK(r).freq,1) > 0
                 t.temp = strsplit(num2str(RDK.RDK(r).freq),'.');
@@ -116,32 +116,32 @@ for r = 1:numel(RDK.RDK)
             weight = weight_raw(t.idx);
             % figure; plot(t.frames(t.idx)./scr.refrate, weight)
             % figure; plot( weight)
-            
+
         case 'BRBF'
             % create phase modulated signal
             brbf.amprange = [0 1]; % signal range
             brbf.phase_shift_size =    1; % default 1; 2 increases the amount of phase shift (and spread of frequencies)
             brbf.phase_shift_freqnum = 3; % default = 3; increases the number of added frequencies for phase shift (adds spred of frequecies)
             brbf.time = (1:trial.frames)./scr.refrate;
-            
+
             weight = (sin( ...
                 2 * pi * brbf.time * mean(RDK.RDK(r).freq) + ...
                 sum(cell2mat(arrayfun(@(i) sin(2 * pi * (brbf.time + rand(1)) * (i +rand(1)/4 + 1)) .* brbf.phase_shift_size, 1:0.5:brbf.phase_shift_freqnum, 'UniformOutput', false)'),1)...
                 ) + (1 + brbf.amprange(1)))./(2/diff(brbf.amprange));
-            
+
             % test plotting
             % figure; plot(weight)
-            
-%             t.fft_amp = squeeze(abs(fft(detrend(weight),10000,2))*2/size(weight,1));
-%             t.fft_xscale = ((0:size(t.fft_amp,2)-1)/size(t.fft_amp,2)) * scr.refrate;
-%             plot(t.fft_xscale,t.fft_amp(:,:))
-%             title('FFT derived frequency spectra of SSVEP signal')
-%             xlabel('frequency in Hz')
-%             ylabel('amplitude (a.u.)')
-%             xlim([0 100])
-            
+
+            %             t.fft_amp = squeeze(abs(fft(detrend(weight),10000,2))*2/size(weight,1));
+            %             t.fft_xscale = ((0:size(t.fft_amp,2)-1)/size(t.fft_amp,2)) * scr.refrate;
+            %             plot(t.fft_xscale,t.fft_amp(:,:))
+            %             title('FFT derived frequency spectra of SSVEP signal')
+            %             xlabel('frequency in Hz')
+            %             ylabel('amplitude (a.u.)')
+            %             xlim([0 100])
+
     end
-    
+
     % adjust color values by weight
     % with color targets created if subclass 'colorchange' is defined
     colmat_r = zeros(size(RDK.RDK(r).col,2), RDK.RDK(r).num, frames.pertrial); %setup color matrix: RGB x dot number x frames
@@ -170,17 +170,20 @@ for r = 1:numel(RDK.RDK)
     % and not between 'not displayed' and 'displayed'
     alphamat = colmat_r(4,:,:); % extract alpha values
     alphamat(alphamat>0)= 1; % look for non-zero alpha values and set them to 1
-%     alphamat(alphamat>=0)= 1; % set all transparency values to 1;
+    %     alphamat(alphamat>=0)= 1; % set all transparency values to 1;
     colmat_r(4,:,:) = alphamat; % replace alpha values with adjusted alpha values
-    
+
     % append everything; dots of different RDKs are merged into one dimension
     colmat = cat(2,colmat,colmat_r);
     lummat = cat(1,lummat, repmat(weight,RDK.RDK(r).num,1));
 end
-    
+
 %% for movement information [across groups shown overlappingly] [they need to be comparable in parameters of size and movement etc.]
+%%%% troubleshooting
+num_iter = nan(r,frames.pertrial);
+
 for r = 1:size(RDK.RDK,2)
-    
+
     % write to new RDKt structure for treating them overlappingly
     RDKt = RDK.RDK(1,r); RDKt.num = sum([RDK.RDK(:,r).num]); % what number of stimuli
     RDKt.numRDKid = cell2mat(arrayfun(@(x,y) repmat(y,1,x), [RDK.RDK(:,r).num], [RDK.RDK(:,r).id], 'UniformOutput', false)); % which RDKid?
@@ -197,7 +200,7 @@ for r = 1:size(RDK.RDK,2)
         movdot(fr_cue:-movdot_update:1)=1;
         % figure; plot(colidx(1,:)); hold on; plot([fr_cue fr_cue], [-0.1 2.1]); plot(movdot)
     end
-    
+
     % initalize RDK positions
     if numel(RDKt.dot_size) == 1 % square dot moving?
         RDKt.rad_x = RDKt.size(1)/2-RDKt.dot_size/2; % Define the maximal x and y positions for a dot
@@ -217,52 +220,75 @@ for r = 1:size(RDK.RDK,2)
     [dot_outside] = check_RDKarea(dot_pos,RDKt);
     [dot_inside] = check_crosscutout(dot_pos,RDKt,cross);
     [dot_overlap] = check_dotoverlap(dot_pos,RDKt);
-   
-    dot_reinitialize = any([dot_outside.any; dot_inside; dot_overlap],1);
-    while any(dot_reinitialize) % generates new positions for only the invalid dots
-        dot_pos(:,dot_reinitialize) = [randi([- RDKt.rad_x  RDKt.rad_x],sum(dot_reinitialize),1) randi([- RDKt.rad_y  RDKt.rad_y],sum(dot_reinitialize),1)]';
-        [dot_outside] = check_RDKarea(dot_pos, RDKt);
-        [dot_inside] = check_crosscutout(dot_pos, RDKt,cross);
-        [dot_overlap] = check_dotoverlap(dot_pos,RDKt);
-        dot_reinitialize = any([dot_outside.any; dot_inside; dot_overlap],1);
-    end
     
-    % setup dot position matrix
-    dotmat_r = zeros(2,  RDKt.num, frames.pertrial); %setup dot matrix: xy x dot number x frames
-    dot_pos_n = dot_pos;
-    
-    for f = 1:frames.pertrial %predefine dot positions for every frame
-               
-        % randomize directions first
-        t.rdiridx = randi(length(RDKt.mov_dir),1,RDKt.num);
-        % apply to position
-        dot_pos_n = dot_pos + RDKt.mov_dir(t.rdiridx,:)'*RDKt.mov_speed*movdot(f);
-
-        % check whether dots are within RDK area
-        [dot_outside,dot_crit] = check_RDKarea(dot_pos_n,RDKt);
-        % check whether dots are outside fixation cross area (if necessary)
-        [dot_inside,cross_crit] = check_crosscutout(dot_pos_n,RDKt,cross);
-        % check whether dots overlap
-        [dot_overlap] = check_dotoverlap(dot_pos_n,RDKt);
+    % include some fail switch
+    redo_flag = 1;
+    maxiter = 200;
+    while redo_flag==1
 
         dot_reinitialize = any([dot_outside.any; dot_inside; dot_overlap],1);
-        while any(dot_reinitialize)
-            t.rdiridx_n = t.rdiridx;
-            for i_dot = find(dot_reinitialize)
-                t.rdiridx_n(i_dot) = randsample(setdiff(1:length(RDKt.mov_dir),t.rdiridx(i_dot)),1);
-            end
-
-            % apply to position
-            dot_pos_n = dot_pos + RDKt.mov_dir(t.rdiridx_n,:)'*RDKt.mov_speed*movdot(f);
-            [dot_outside,dot_crit] = check_RDKarea(dot_pos_n,RDKt);
-            [dot_inside,cross_crit] = check_crosscutout(dot_pos_n,RDKt,cross);
-            [dot_overlap] = check_dotoverlap(dot_pos_n,RDKt);
+        while any(dot_reinitialize) % generates new positions for only the invalid dots
+            dot_pos(:,dot_reinitialize) = [randi([- RDKt.rad_x  RDKt.rad_x],sum(dot_reinitialize),1) randi([- RDKt.rad_y  RDKt.rad_y],sum(dot_reinitialize),1)]';
+            [dot_outside] = check_RDKarea(dot_pos, RDKt);
+            [dot_inside] = check_crosscutout(dot_pos, RDKt,cross);
+            [dot_overlap] = check_dotoverlap(dot_pos,RDKt);
             dot_reinitialize = any([dot_outside.any; dot_inside; dot_overlap],1);
         end
 
-        dot_pos = dot_pos_n;
-        %write into dot matrix
-        dotmat_r(:,:,f) = dot_pos; 
+        % setup dot position matrix
+        dotmat_r = zeros(2,  RDKt.num, frames.pertrial); %setup dot matrix: xy x dot number x frames
+        dot_pos_n = dot_pos;
+
+        for f = 1:frames.pertrial %predefine dot positions for every frame
+
+            % randomize directions first
+            t.rdiridx = randi(length(RDKt.mov_dir),1,RDKt.num);
+            % apply to position
+            dot_pos_n = dot_pos + RDKt.mov_dir(t.rdiridx,:)'*RDKt.mov_speed*movdot(f);
+
+            % check whether dots are within RDK area
+            [dot_outside,dot_crit] = check_RDKarea(dot_pos_n,RDKt);
+            % check whether dots are outside fixation cross area (if necessary)
+            [dot_inside,cross_crit] = check_crosscutout(dot_pos_n,RDKt,cross);
+            % check whether dots overlap
+            [dot_overlap] = check_dotoverlap(dot_pos_n,RDKt);
+
+            dot_reinitialize = any([dot_outside.any; dot_inside; dot_overlap],1);
+            t_num = 0;
+            while any(dot_reinitialize) & t_num <= maxiter
+                t.rdiridx_n = t.rdiridx;
+                for i_dot = find(dot_reinitialize)
+                    t.rdiridx_n(i_dot) = randsample(setdiff(1:length(RDKt.mov_dir),t.rdiridx(i_dot)),1);
+                end
+
+                % apply to position
+                dot_pos_n = dot_pos + RDKt.mov_dir(t.rdiridx_n,:)'*RDKt.mov_speed*movdot(f);
+                [dot_outside,dot_crit] = check_RDKarea(dot_pos_n,RDKt);
+                [dot_inside,cross_crit] = check_crosscutout(dot_pos_n,RDKt,cross);
+                [dot_overlap] = check_dotoverlap(dot_pos_n,RDKt);
+                dot_reinitialize = any([dot_outside.any; dot_inside; dot_overlap],1);
+                %%%% troubleshooting
+                t_num = t_num+1; % count the number of iterations
+            end
+            if t_num > maxiter
+                break % redo the randomization
+            end
+
+            %%%% troubleshooting
+            num_iter(r,f) = t_num;
+
+            dot_pos = dot_pos_n;
+            %write into dot matrix
+            dotmat_r(:,:,f) = dot_pos;
+        end
+
+        % check whether randomization needs to be redone
+        if t_num > maxiter
+            redo_flag = 1;
+        else
+            redo_flag = 0;
+        end
+
     end
 
     % add QUAD4X shift to positions
@@ -275,24 +301,24 @@ for r = 1:size(RDK.RDK,2)
     % add RDK centershift to positions
     dotmat_r = [dotmat_r(1,:,:)+RDKt.centershift(1); dotmat_r(2,:,:)+RDKt.centershift(2)];
     % figure; scatter(dotmat_r(1,:,1),dotmat_r(2,:,1))
-     
-    % setup array to mark to wich RDK a dot belongs 
+
+    % setup array to mark to wich RDK a dot belongs
     rdkidx_r = repmat(RDKt.numRDKid',1,size(dotmat_r,3));
-    
+
     % define size for each dot
     dotsize_r = repmat(ceil(sqrt(sum((RDKt.dot_size).^2))/2),size(rdkidx_r));
-    
+
     % append everything; dots of different RDKs are merged into one dimension
     dotmat = cat(2,dotmat,dotmat_r);
     rdkidx = cat(1,rdkidx,rdkidx_r);
     dotsize = cat(1,dotsize,dotsize_r);
-    
+
 
     % troublehsooting:
     % plotting
-%     figure; plot(squeeze(colmat(1,:,:))')
-     
-    
+    %     figure; plot(squeeze(colmat(1,:,:))')
+
+
 end
 
 %% redistribute data
@@ -304,6 +330,9 @@ lummat = reshape(lummat,[size(lummat,1)*Propixx, frames.flips]);
 
 
 varargout{1} = lummat;
+
+%%%troubleshooting
+% figure; plot(num_iter')
 end
 
 %% SUBFUNCTIONS
@@ -320,15 +349,15 @@ dot_outside.square = dot_outside.x | dot_outside.y;
 
 switch RDK.shape
     case 1
-    dot_outside.any = dot_outside.square;
+        dot_outside.any = dot_outside.square;
     case 0
-    dot_outside.any = dot_outside.ellipse;
+        dot_outside.any = dot_outside.ellipse;
 end
 
 end
 
 function [dot_inside,cross_crit] = check_crosscutout(dot_pos,RDK,cross)
- cross_crit = (dot_pos(1,:)+RDK.centershift(1)).^2/cross.rad^2 ...
+cross_crit = (dot_pos(1,:)+RDK.centershift(1)).^2/cross.rad^2 ...
     + (dot_pos(2,:)+RDK.centershift(2)).^2/cross.rad^2; % dots inside the fixation cross cutout (if cross.cutout nonzero); Note: these calculations still assume that RDK is central, centershift is added later; that's why we need to add centershift here for checking;
 dot_inside = cross_crit <= 1;
 end
