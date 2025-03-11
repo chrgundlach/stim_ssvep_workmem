@@ -39,7 +39,7 @@ p.isol.override         = [0.4706 0.1882 0 1; 0 0.3498 0.8745 1;0 0.4392 0 1]; %
 
 % stimplan
 p.stim.condition        = [1 2 3 4 5 6];    
-                        % [cue_left_3t3d cue_right_3t3d cue_left_6t cue_right_6t cue_left_3t cue_right_3t]
+                        % [cue_left_3t3d; cue_right_3t3d; cue_left_6t; cue_right_6t; cue_left_3t; cue_right_3t]
                         % [RDK1 RDK3; RDK4 RDK6] [RDK1 RDK3; RDK4 RDK6] [RDK1 RDK2; RDK4 RDK5] [RDK1 RDK2; RDK4 RDK5] [RDK1; RDK4] [RDK1; RDK4] 
 p.stim.con_targstim     = [3 3 6 6 3 3];
 p.stim.con_diststim     = [3 3 0 0 0 0];
@@ -66,7 +66,8 @@ p.stim.precue_event.min_offset  = 0.4;       % min offset from precue-event end 
 
 
 % introduce RDK structure
-RDK.RDK(1).size         = [308 308];                    % width and height of RDK in pixel; only even values [38 = 9.6°]
+% RDK.RDK(1).size         = [308 308];                    % width and height of RDK in pixel; only even values [38 = 9.6°]
+RDK.RDK(1).size         = [208 208];                    % width and height of RDK in pixel; only even values [38 = 9.6°]
 RDK.RDK(1).centershift  = [0 0];                        % position of RDK center; x and y deviation from center in pixel
 RDK.RDK(1).col          = [1 1 1 1; p.scr_color(1:3) 0];% "on" and "off" color [assigned later]
 RDK.RDK(1).freq         = 0;                            % flicker frequency, frequency of a full "on"-"off"-cycle
@@ -75,18 +76,20 @@ RDK.RDK(1).num          = 3;                            % number of dots % 85
 RDK.RDK(1).mov_speed    = 1;                            % movement speed in pixel
 RDK.RDK(1).mov_dir      = [0 1; 0 -1; -1 0; 1 0];       % movement direction  [0 1; 0 -1; -1 0; 1 0] = up, down, left, right
 RDK.RDK(1).dot_size     = [40 10];                      % size of rectangles
+RDK.RDK(1).dot_size     = [20 5];                      % size of rectangles
 RDK.RDK(1).shape        = 1;                            % 1 = square RDK; 0 = ellipse/circle RDK;
 RDK.RDK(1).id           = 1;                            % identifier for RDK
 
 
-p.stim.pos_shift        = [-255 0; 255 0];              % position shift in pixel for stimuli in periphery [255 = 7.8°] either left or right
+% p.stim.pos_shift        = [-255 0; 255 0];              % position shift in pixel for stimuli in periphery [255 = 7.8°] either left or right
+p.stim.pos_shift        = [-155 0; 155 0];              % position shift in pixel for stimuli in periphery [255 = 7.8°] either left or right
 p.stim.freqs            = [17 20 23 26];                % possible frequencies of different RDKs
 p.stim.colors           = ...                           % "on" and "off" color
     {[0.4706 0.1882 0 1; p.scr_color(1:3) 0];...
     [0 0.3498 0.8745 1; p.scr_color(1:3) 0]};
     % plot_colorwheel([0.4706 0.1882 0; 0 0.3498 0.8745],'ColorSpace','propixxrgb','LAB_L',50,'NumSegments',60,'AlphaColWheel',1,'LumBackground',100, 'disp_LAB_vals', 1)
 p.stim.color_names      = {'redish';'blue'};
-p.stim.RDKsamecolors    = [1 1 2 2 2 1]; % which ones of the RDKs share the same color?
+p.stim.RDKsamecolors    = [1 1 2 1 1 2]; % which ones of the RDKs share the same color?
 p.stim.RDKsamefreqs     = [1 2 2 3 4 4];
 p.stim.RDKpos_shifts    = [1 1 1 2 2 2];
  

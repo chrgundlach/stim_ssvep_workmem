@@ -179,6 +179,12 @@ for r = 1:numel(RDK.RDK)
 end
     
 %% for movement information [across groups shown overlappingly] [they need to be comparable in parameters of size and movement etc.]
+% for r = 1:size(RDK.RDK,1)
+% 
+%     % write to new RDKt structure for treating them overlappingly
+%     RDKt = RDK.RDK(r,1); RDKt.num = sum([RDK.RDK(r,:).num]); % what number of stimuli
+%     RDKt.numRDKid = cell2mat(arrayfun(@(x,y) repmat(y,1,x), [RDK.RDK(r,:).num], [RDK.RDK(r,:).id], 'UniformOutput', false)); % which RDKid?
+
 for r = 1:size(RDK.RDK,2)
     
     % write to new RDKt structure for treating them overlappingly

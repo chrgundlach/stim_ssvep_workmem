@@ -68,12 +68,28 @@ for i_tr = 1:numel(trialindex)
         'cue',conmat.trials(trialindex(i_tr)).precue_frames+1,'event','none');
     RDKin.RDK.event.type = 'none';
     
+    % assign RDKs
+    t.idx = size(conmat.trials(trialindex(i_tr)).RDK2display);
+    RDKin.RDK.RDK = repmat({''},t.idx);
+    for i_count = 1:numel(conmat.trials(trialindex(i_tr)).RDK2display)
+        RDKin.RDK.RDK
+    end
+
+    t.rdks = RDK.RDK(conmat.trials(trialindex(i_tr)).RDK2display)
+    RDKin.RDK.RDK = repmat({''},size(conmat.trials(trialindex(i_tr)).RDK2display));
+    [RDKin.RDK.RDK{:}] = deal(t.rdks(:));
+    
     RDKin.RDK.RDK = RDK.RDK(conmat.trials(trialindex(i_tr)).RDK2display);
+    % if size(RDKin.RDK.RDK,2)>size(RDKin.RDK.RDK,1)
+    %     RDKin.RDK.RDK = RDKin.RDK.RDK';
+    % end
     RDKin.RDK.presentedRDKs = conmat.trials(trialindex(i_tr)).RDK2display;
     
     % initialize positions and colors and luminance: lummat is the important for texture alpha
     % for stimulus tracking time window (pre-cue and post-cue)
     [colmat,dotmat,dotsize,rdkidx,frames,lummat] = RDK_init_SSVEP_workmem(RDKin.scr,RDKin.Propixx,RDKin.RDK,RDKin.trial,RDKin.crs);
+
+    %%% there is an error in the allocation of the RDK structure!
 
 
     % append frames to also include retention interval
@@ -261,6 +277,8 @@ for i_tr = 1:numel(trialindex)
 
         % fixation cross
         Screen('DrawTextures', ps.window, crossmat(i_fl), [], p.crs.rects);
+    %     Screen('Flip', ps.window, 0);
+    % end
         
         %% start trigger schedule and start listening to response device
         if i_fl == 1 % send the trigger with the start of the 1st flip
@@ -295,7 +313,8 @@ for i_tr = 1:numel(trialindex)
     
     %% probe presentation until response or maximum time window
     i_fl_r = i_fl+1;
-    while ~any(key.firstPress(key.keymap)>1) | starttime_probe - GetSecs <= max(p.stim.time_response)
+    crttime3 = GetSecs;
+    while ~any(key.firstPress(key.keymap)>1) & crttime3 - starttime_probe <= max(p.stim.time_response)
         %% display probe array
         % draw rectangles
         Screen('DrawTextures', ...  % draw rectangles
@@ -324,9 +343,11 @@ for i_tr = 1:numel(trialindex)
         if any(key.firstPress(key.keymap)>1)
             lptwrite(1,find(key.firstPress(key.keymap),1,'first'),500);
         end
-
+        
+        
         % update running flip
         i_fl_r = i_fl_r+1;
+        crttime3 = GetSecs;
     end
 
     
@@ -345,6 +366,9 @@ for i_tr = 1:numel(trialindex)
     % do behavioral calculation
     key.presses{i_tr}(1,:)=[];
     key.presses_t{i_tr}(1,:)=[];
+
+    key.presses{i_tr}(find(isnan(key.presses{i_tr}),1,'first'):end,:)=[];
+    key.presses_t{i_tr}(find(isnan(key.presses_t{i_tr}),1,'first'):end,:)=[];
     
     % get frame and timing of button press onsets
     resp(i_tr).button_presses_fr=nan(max(sum(key.presses{i_tr})),size(key.presses{i_tr},2));
@@ -360,63 +384,67 @@ for i_tr = 1:numel(trialindex)
         end
     end
     
-    % check for hits {'hit','miss','CR','FA_proper','FA'}
-    resp(i_tr).button_presses_type = {}; %{'hit','miss','CR','FA_proper','FA'}
-    resp(i_tr).button_presses_RT = []; % reaction time in ms (after event or closest to other event)
-    resp(i_tr).event_response_type = {}; %{'hit','miss','CR','FA_proper'}
-    resp(i_tr).event_response_RT = []; %reaction time or nan
+    % check for hits {'hit','miss','error'}
+    resp(i_tr).event_response_type = {}; %{'hit','miss','error'}
+    resp(i_tr).event_response_RT = []; % reaction time in ms (after event or closest to other event)
     % all relevant presses 
-    t.presses = resp(i_tr).button_presses_t(:,key.keymap_ind==key.SPACE);
+    t.presses = resp(i_tr).button_presses_t(:,key.keymap_ind==key.SAME | key.keymap_ind==key.diff);
     % first define response windows
     if any(~isnan(resp(i_tr).eventtype))
-        t.respwin = (resp(i_tr).event_onset_times(~isnan(resp(i_tr).eventtype))+(p.targ_respwin/1000))*1000;
+        t.respwin = ((resp(i_tr).precue_times+resp(i_tr).postcue_times+resp(i_tr).retention_times)+(p.targ_respwin/1000))*1000;
     end
-    % loop across button presses
-    for i_press = 1:numel(t.presses)
-        if any(~isnan(resp(i_tr).eventtype)) % is there an event?
-            t.idx = t.presses(i_press)>=t.respwin(:,1) & t.presses(i_press)<=t.respwin(:,2);
-            % not in any response window? --> FA; no reaction time
-            if sum(t.idx)== 0
-                resp(i_tr).button_presses_type{i_press} = 'FA';
-                % no reaction time
-                resp(i_tr).button_presses_RT(i_press) = nan;
-            else
-                if resp(i_tr).eventtype(t.idx)== 1
-                    resp(i_tr).button_presses_type{i_press} = 'hit';
-                else
-                    resp(i_tr).button_presses_type{i_press} = 'FA_proper';
-                end
-                resp(i_tr).event_response_type{t.idx} = resp(i_tr).button_presses_type{i_press};
-                % reaction time?
-                resp(i_tr).button_presses_RT(i_press) = t.presses(i_press)-(resp(i_tr).event_onset_times(t.idx)*1000);
-                resp(i_tr).event_response_RT(t.idx) = resp(i_tr).button_presses_RT(i_press) ;
-            end
-            
+    
+    % check for button presses in time window
+    t.idx = t.presses>=t.respwin(:,1) & t.presses<=t.respwin(:,2);
+    % not in any response window? --> miss; no reaction time
+    if ~any(t.idx,"all")
+        resp(i_tr).event_response_type = 'miss';
+        % no reaction time
+        resp(i_tr).event_response_RT = nan;
+    else
+        if find(any(t.idx,1)) == resp(i_tr).eventtype % check for button presses of same for same trials and diff for diff trials
+            resp(i_tr).event_response_type = 'hit';
         else
-            % no events --> all presses are false alarms; no reaction time
-            resp(i_tr).button_presses_type{i_press} = 'FA';
-            resp(i_tr).button_presses_RT(i_press) = nan;
+            resp(i_tr).event_response_type = 'error';
         end
+
+        % reaction time?
+        resp(i_tr).event_response_RT = t.presses(t.idx)- ...
+            (resp(i_tr).precue_times + resp(i_tr).postcue_times + resp(i_tr).retention_times)*1000;
     end
-    % check for correct responses or misses
-    for i_ev = 1:resp(i_tr).eventnum
-        if isempty(resp(i_tr).event_response_type)| numel(resp(i_tr).event_response_type)<i_ev
-            if resp(i_tr).eventtype(i_ev)==1
-                resp(i_tr).event_response_type{i_ev}='miss';
-            else
-                resp(i_tr).event_response_type{i_ev}='CR';
-            end
-            resp(i_tr).event_response_RT(i_ev) = nan;
+
+    % check for pre-cue events
+    % check for hits {'hit','miss','error'}
+    resp(i_tr).precue_event_response_type = {}; %{'hit','miss','error'}
+    resp(i_tr).precue_event_response_RT = []; % reaction time in ms (after event or closest to other event)
+
+    % first define response windows
+    if any(~isnan(resp(i_tr).precue_eventtype))
+        t.respwin = (resp(i_tr).precue_event_onset_t_est+(p.targ_respwin/1000))*1000;
+    end
+
+    % check for button presses in time window
+    t.idx = find(t.presses>=t.respwin(:,1) & t.presses<=t.respwin(:,2));
+    
+    % not in any response window? --> miss; no reaction time
+    if ~any(t.idx,"all")
+        resp(i_tr).precue_event_response_type = 'miss';
+        % no reaction time
+        resp(i_tr).precue_event_response_RT = nan;
+    else
+        % check for first respons (in case of two presses: should be rare but might happen)
+        [~, t.idx2] = min(t.presses(t.idx));
+        t.idx3 = false(size(t.presses)); t.idx3(t.idx(t.idx2))=true;
+
+        if find(any(t.idx3,1)) == resp(i_tr).precue_eventtype % check for button presses of same for same trials and diff for diff trials
+            resp(i_tr).precue_event_response_type = 'hit';
         else
-            if isempty(resp(i_tr).event_response_type{i_ev})
-                if resp(i_tr).eventtype(i_ev)==1
-                    resp(i_tr).event_response_type{i_ev}='miss';
-                else
-                    resp(i_tr).event_response_type{i_ev}='CR';
-                end
-                resp(i_tr).event_response_RT(i_ev) = nan;
-            end
+            resp(i_tr).precue_event_response_type = 'error';
         end
+
+        % reaction time?
+        resp(i_tr).precue_event_response_RT = t.presses(t.idx3)- ...
+            resp(i_tr).precue_event_onset_t_est*1000;
     end
     
 end

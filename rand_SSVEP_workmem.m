@@ -54,10 +54,10 @@ else
 end
 
 
-% assign cue (1 = attend to RDK 1 (left); 4 = attend to RDK 4 (right))
+% assign cue (1 = attend to RDK 1 (left); 2 = attend to RDK 4 (right))
 conmat.mats.cue = nan(1,conmat.totaltrials);
 conmat.mats.cue(ismember(conmat.mats.condition,1:2:6))=1;
-conmat.mats.cue(ismember(conmat.mats.condition,2:2:6))=4;
+conmat.mats.cue(ismember(conmat.mats.condition,2:2:6))=2;
 
 
 % randomize eventtype (1 = probe match; 2 = probe mismatch)
