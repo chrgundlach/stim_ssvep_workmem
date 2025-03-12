@@ -25,8 +25,8 @@ function [] = run_SSVEP_workmem(sub,flag_training, flag_block)
 %       [ext_width ext_height]=visualangle([160 238],[120],[1920 1080]./2,[63 36])  5° x 7.5°
 %       [ext_width ext_height]=visualangle([176 254],[120],[1920 1080]./2,[63 36])  5.5° x 8°
 %       [ext_width ext_height]=visualangle([176 270],[120],[1920 1080]./2,[63 36])  5.5° x 8.5°
-%       [ext_width ext_height]=visualangle([192 270],[120],[1920 1080]./2,[63 36])  6° x 8.5°
-%       [ext_width ext_height]=visualangle([-120],[120],[1920 1080]./2,[63 36])  -3.5°          --> favorite shift
+%       [ext_width ext_height]=visualangle([192 270],[120],[1920 1080]./2,[63 36])  6° x 8.5°   --> favorite shift
+%       [ext_width ext_height]=visualangle([-120],[120],[1920 1080]./2,[63 36])  -3.5°          
 %       [ext_width ext_height]=visualangle([-128],[120],[1920 1080]./2,[63 36])  -3.5°          --> favorite shift
 %
 %       original study Vogel et al.
