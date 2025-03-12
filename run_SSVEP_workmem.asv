@@ -108,7 +108,7 @@ RDK.RDK(1).id           = 1;                            % identifier for RDK
 
 
 % p.stim.pos_shift        = [-192 0; 192 0];              % position shift in pixel for stimuli in periphery [255 = 7.8°] either left or right
-p.stim.pos_shift        = [-128 0; 128 0];              % position shift in pixel for stimuli in periphery [255 = 7.8°] either left or right
+p.stim.pos_shift        = [-128 0; 120 0];              % position shift in pixel for stimuli in periphery [255 = 7.8°] either left or right
 
 p.stim.freqs            = [17 20 23 26];                % possible frequencies of different RDKs
 p.stim.colors           = ...                           % "on" and "off" color

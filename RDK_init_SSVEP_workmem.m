@@ -223,7 +223,7 @@ for r = 1:size(RDK.RDK,2)
     
     % include some fail switch
     redo_flag = 1;
-    maxiter = 200;
+    maxiter = 150;
     while redo_flag==1
 
         dot_reinitialize = any([dot_outside.any; dot_inside; dot_overlap],1);
@@ -367,7 +367,8 @@ function [dot_overlap] = check_dotoverlap(dot_pos,RDK)
 if numel(RDK.dot_size) == 1 % square dot moving?
     critdist = RDK.dot_size/2;
 elseif numel(RDK.dot_size) == 2 % square dot moving?
-    critdist = ceil(sqrt(sum((RDK.dot_size).^2))/2);
+    % critdist = ceil(sqrt(sum((RDK.dot_size).^2))/2);
+    critdist = ceil((sqrt(sum((RDK.dot_size).^2))/2)*1.2); % add 10 %
 end
 dot_crit.x = abs(dot_pos(1,:)'-dot_pos(1,:)).^2/critdist^2;
 dot_crit.y = abs(dot_pos(2,:)'-dot_pos(2,:)).^2/critdist^2;

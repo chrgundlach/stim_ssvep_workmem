@@ -227,6 +227,9 @@ for i_tr = 1:numel(trialindex)
         crttime2 = GetSecs;
         t.timetowait = (p.ITI(1)/1000)-(crttime2 - crttime);
         ttt=WaitSecs(t.timetowait);
+        % troubleshooting
+        % fprintf('\nITI = %1.0f\n',GetSecs - crttime)
+        fprintf('\nbefore wait = %1.3f; after wait = %1.3f\n',crttime2 - crttime, GetSecs - crttime)
     end
 
     %%%%
@@ -347,7 +350,7 @@ for i_tr = 1:numel(trialindex)
     
     %% ITI
     % fixation cross
-    Screen('DrawTextures', ps.window, crossmat(end), [], p.crs.rects);
+    Screen('DrawTextures', ps.window, crossmat(1), [], p.crs.rects);
     
     % flip
     Screen('Flip', ps.window, 0);
@@ -384,7 +387,7 @@ for i_tr = 1:numel(trialindex)
     t.presses = resp(i_tr).button_presses_t(:,key.keymap_ind==key.SAME | key.keymap_ind==key.diff);
     % first define response windows
     if any(~isnan(resp(i_tr).eventtype))
-        t.respwin = ((resp(i_tr).precue_times+resp(i_tr).postcue_times+resp(i_tr).retention_times)+(p.targ_respwin/1000))*1000;
+        t.respwin = ((resp(i_tr).precue_times+resp(i_tr).postcue_times+resp(i_tr).retention_times)+(p.targ_respwin_main/1000))*1000;
     end
     
     % check for button presses in time window
@@ -413,7 +416,7 @@ for i_tr = 1:numel(trialindex)
 
     % first define response windows
     if any(~isnan(resp(i_tr).precue_eventtype))
-        t.respwin = (resp(i_tr).precue_event_onset_t_est+(p.targ_respwin/1000))*1000;
+        t.respwin = (resp(i_tr).precue_event_onset_t_est+(p.targ_respwin_precue/1000))*1000;
     end
 
     % check for button presses in time window
