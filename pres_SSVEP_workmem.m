@@ -98,7 +98,8 @@ for i_tr = 1:numel(trialindex)
     end
     append_dotmat = nan([size(dotmat,[1:2]),1]);
     for i_dot = 1:size(dotmat,2)
-        append_dotmat(:,i_dot) = dotmat(:,i_dot,lastpos_on(i_dot)); % index position of dot during their last on frame
+        % append_dotmat(:,i_dot) = dotmat(:,i_dot,lastpos_on(i_dot)); % index position of dot during their last on frame --> this leads to overlap, not recommended
+        append_dotmat(:,i_dot) = dotmat(:,i_dot,min(lastpos_on)); % index position of dot during their last on frame
     end
     dotmat = cat(3,dotmat,repmat(append_dotmat,[1,1,append_frnum]));
     dotsize = cat(2,dotsize,repmat(dotsize(:,end),[1, append_frnum]));
@@ -333,6 +334,12 @@ for i_tr = 1:numel(trialindex)
         % get image
         % current_display = Screen('GetImage',ps.window);
         % imwrite(current_display,'./stims/probe_leftblue_3t3d.png')
+
+        % troubleshooting
+        % if i_fl_r == i_fl+1
+        %     t.stop = 1;
+        % end
+
 
 
         %% check for button presses
