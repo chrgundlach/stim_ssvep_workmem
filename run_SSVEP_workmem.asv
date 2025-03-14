@@ -252,7 +252,7 @@ if p.flag_training
     flag_trainend = 0;
     while flag_trainend == 0 % do training until ended
         %rand('state',p.sub*i_bl) % determine randstate
-        rng(p.sub*100+i_bl,'v4')
+        rng(p.sub*i_bl,'v4')
         randmat.training{i_bl} = rand_SSVEP_workmem(p, RDK,  1);
         [timing.training{i_bl},button_presses.training{i_bl},resp.training{i_bl}] = ...
             pres_SSVEP_workmem(p, ps, key, RDK, randmat.training{i_bl}, i_bl,1);
@@ -283,7 +283,7 @@ rng(p.sub,'v4')                                 % allow for same randomization o
 randmat.experiment = rand_SSVEP_workmem(p, RDK,  0);    % randomization
 for i_bl = p.flag_block:p.stim.blocknum
     % reset randomizations seed to make sure that positions in each block are the same, even if started in between
-    rng(p.sub*100+i_bl,'v4')                                 % allow for same randomization of RDKInit 
+    rng(p.sub,'v4')                                 % allow for same randomization of RDKInit 
     % start experiment
     [timing.experiment{i_bl},button_presses.experiment{i_bl},resp.experiment{i_bl}] = ...
         pres_SSVEP_workmem(p, ps, key, RDK, randmat.experiment, i_bl,0);

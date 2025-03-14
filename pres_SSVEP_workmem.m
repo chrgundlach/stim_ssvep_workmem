@@ -228,8 +228,7 @@ for i_tr = 1:numel(trialindex)
         t.timetowait = (p.ITI(1)/1000)-(crttime2 - crttime);
         ttt=WaitSecs(t.timetowait);
         % troubleshooting
-        % fprintf('\nITI = %1.0f\n',GetSecs - crttime)
-        fprintf('\nbefore wait = %1.3f; after wait = %1.3f\n',crttime2 - crttime, GetSecs - crttime)
+        %fprintf('\nbefore wait = %1.3f; after wait = %1.3f\n',crttime2 - crttime, GetSecs - crttime)
     end
 
     %%%%

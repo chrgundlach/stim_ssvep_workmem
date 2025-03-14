@@ -367,14 +367,20 @@ function [dot_overlap] = check_dotoverlap(dot_pos,RDK)
 if numel(RDK.dot_size) == 1 % square dot moving?
     critdist = RDK.dot_size/2;
 elseif numel(RDK.dot_size) == 2 % square dot moving?
+    % critdist = ceil(sqrt(sum((RDK.dot_size).^2))/2);
+    % critdist = ceil((sqrt(sum((RDK.dot_size).^2))/2)*1.2); % add 10 %
     critdist = ceil((sqrt(sum((RDK.dot_size).^2)))*1.1); % add 10 %
 end
+% dot_crit.x = abs(dot_pos(1,:)'-dot_pos(1,:)).^2/critdist^2;
+% dot_crit.y = abs(dot_pos(2,:)'-dot_pos(2,:)).^2/critdist^2;
+
 dot_crit = sqrt(...
     abs(dot_pos(1,:)'-dot_pos(1,:)).^2 + ... % x² + y² < critdist²
-    abs(dot_pos(2,:)'-dot_pos(2,:)).^2)/critdist;
+    abs(dot_pos(2,:)'-dot_pos(2,:)).^2;
 
 % find dots too close to each other
-critmat = (dot_crit <= 1) & tril(~eye(size(dot_crit,1))); % looks for any differences in matrix in lower triangular
+critmat = (dot_crit.x <=1 | dot_crit.y <= 1) & tril(~eye(size(dot_crit.x,1))); % looks for any differences in matrix in lower triangular
+critmat = (dot_crit.x <=1 | dot_crit.y <= 1) & tril(~eye(size(dot_crit.x,1))); % looks for any differences in matrix in lower triangular
 
 % index the dots
 [critdot1, critdot2] = ind2sub(size(critmat),find(critmat));
