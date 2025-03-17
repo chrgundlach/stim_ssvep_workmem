@@ -4,7 +4,7 @@ function [] = run_SSVEP_workmem(sub,flag_training, flag_block)
 %       sub:            participant number
 %       flag_training:  1 = do training
 %       flag_block:     1 = start with block 1
-%           e.g. run_SSVEP_workmemr(1,1,1)
+%           e.g. run_SSVEP_workmem(1,1,1)
 % 
 %   study looking into working memory and SSVEP relationship
 %
