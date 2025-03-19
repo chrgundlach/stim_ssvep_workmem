@@ -190,7 +190,7 @@ end
 
 %% keyboard and ports setup ???
 KbName('UnifyKeyNames')
-Buttons = [KbName('ESCAPE') KbName('Q') KbName('SPACE') KbName('j') KbName('n') KbName('s') KbName('d')];
+Buttons = [KbName('ESCAPE') KbName('Q') KbName('SPACE') KbName('j') KbName('n') KbName('s') KbName('l')];
 RestrictKeysForKbCheck(Buttons);
 key.keymap=false(1,256);
 key.keymap(Buttons) = true;
