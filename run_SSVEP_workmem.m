@@ -257,7 +257,8 @@ if p.flag_training
         [timing.training{i_bl},button_presses.training{i_bl},resp.training{i_bl}] = ...
             pres_SSVEP_workmem(p, ps, key, RDK, randmat.training{i_bl}, i_bl,1);
         save(sprintf('%s%s',p.log.path,p.filename),'timing','button_presses','resp','randmat','p', 'RDK')
-        pres_feedback(resp.training{i_bl},p,ps, key,RDK)
+        %pres_feedback(resp.training{i_bl},p,ps, key,RDK)
+        pres_feedback_withspace(resp.training{i_bl},p,ps, key,RDK)
                
         % loop for training to be repeated
         fprintf(1,'\nTraing wiederholen? (j/n)')
@@ -282,6 +283,19 @@ end
 rng(p.sub,'v4')                                 % allow for same randomization of randmat
 randmat.experiment = rand_SSVEP_workmem(p, RDK,  0);    % randomization
 for i_bl = p.flag_block:p.stim.blocknum
+    % do not start immediately if no training was run before
+    if p.flag_training == 0 & i_bl == p.flag_block
+        fprintf(1,'\nExperiment starten mit "q"\n')
+        inp.prompt_check = 0;
+        while inp.prompt_check == 0             % loop to check for correct input
+            [key.keyisdown,key.secs,key.keycode] = KbCheck;
+            if key.keycode(key.SECRET)==1
+                flag_trainend = 0; inp.prompt_check = 1;
+            end
+            Screen('Flip', ps.window, 0);
+        end
+    end
+
     % reset randomizations seed to make sure that positions in each block are the same, even if started in between
     rng(p.sub*100+i_bl,'v4')                                 % allow for same randomization of RDKInit 
     % start experiment
@@ -290,7 +304,8 @@ for i_bl = p.flag_block:p.stim.blocknum
     % save logfiles
     save(sprintf('%s%s',p.log.path,p.filename),'timing','button_presses','resp','randmat','p', 'RDK')
           
-    pres_feedback(resp.experiment{i_bl},p,ps, key, RDK)    
+    %pres_feedback(resp.experiment{i_bl},p,ps, key, RDK)    
+    pres_feedback_withspace(resp.experiment{i_bl},p,ps, key, RDK)    
 end
 
 fprintf(1,'\n\nENDE\n')

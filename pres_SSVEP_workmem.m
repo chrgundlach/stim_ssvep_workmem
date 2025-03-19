@@ -196,19 +196,19 @@ for i_tr = 1:numel(trialindex)
     doutWave(1) = p.trig.tr_start;
 
     % add condition trigger when cue is presented
-    % condition trigger for cue
+    % condition trigger for cue + trialtype
     resp(i_tr).triggernum_cue = ...
-        p.trig.tr_con_cue(resp(i_tr).condition); % condition 1 2 3 4 5 6
+        p.trig.tr_con_cue(resp(i_tr).condition) + 100*(resp(i_tr).trialtype-1); % condition 1 2 3 4 5 6
     doutWave(resp(i_tr).cue_onset_fr) = resp(i_tr).triggernum_cue;
     
     % condition trigger for retention
     resp(i_tr).triggernum_retent = ...
-        p.trig.tr_con_retent(resp(i_tr).condition); % condition 1 2 3 4 5 6
+        p.trig.tr_con_retent(resp(i_tr).condition) + 100*(resp(i_tr).trialtype-1); % condition 1 2 3 4 5 6
     doutWave(resp(i_tr).cue_onset_fr + resp(i_tr).postcue_frames) = resp(i_tr).triggernum_retent;
     
     % condition trigger for event
     resp(i_tr).triggernum_event = ...
-        p.trig.tr_con_event(resp(i_tr).eventtype, resp(i_tr).condition); % condition 1 2 3 4 5 6
+        p.trig.tr_con_event(resp(i_tr).eventtype, resp(i_tr).condition) + 100*(resp(i_tr).trialtype-1); % condition 1 2 3 4 5 6
     doutWave(resp(i_tr).cue_onset_fr + resp(i_tr).postcue_frames + resp(i_tr).retention_frames) = resp(i_tr).triggernum_event;
     
     % add pre-event trigger
