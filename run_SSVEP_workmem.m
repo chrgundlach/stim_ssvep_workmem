@@ -10,16 +10,7 @@ function [] = run_SSVEP_workmem(sub,flag_training, flag_block)
 %
 % to be decided?
 %   - stimulus sizes
-%       all for three stimuli
-%       [ext_width ext_height]=visualangle([50 15],[120],[1920 1080]./2,[63 36])  1.56° x 0.48° --> favorite size
-%       [ext_width ext_height]=visualangle([64 16],[120],[1920 1080]./2,[63 36])  2° x 0.5°
-%       [ext_width ext_height]=visualangle([308 308],[120],[1920 1080]./2,[63 36])  9.5° x 9.7°
-%       [ext_width ext_height]=visualangle([290 290],[120],[1920 1080]./2,[63 36])  9.01° x 9.15°
-%       [ext_width ext_height]=visualangle([260 290],[120],[1920 1080]./2,[63 36])  8.09° x 9.15°--> favorite area
-%       [ext_width ext_height]=visualangle([-192],[120],[1920 1080]./2,[63 36])  -6.0°
-%       [ext_width ext_height]=visualangle([-160],[120],[1920 1080]./2,[63 36])  -5.0°          --> favorite shift
-%
-%       all for three stimuli
+%       all for two stimuli
 %       [ext_width ext_height]=visualangle([50 15],[120],[1920 1080]./2,[63 36])  1.56° x 0.48° --> favorite size
 %       [ext_width ext_height]=visualangle([64 16],[120],[1920 1080]./2,[63 36])  2° x 0.5°
 %       [ext_width ext_height]=visualangle([160 238],[120],[1920 1080]./2,[63 36])  5° x 7.5°
@@ -31,6 +22,9 @@ function [] = run_SSVEP_workmem(sub,flag_training, flag_block)
 %
 %       original study Vogel et al.
 %           RDK region rectangular 4° x 7.3° shifted left and right by 3°, stimuli 0.65° (seems small); two stimuli or four stimuli
+%
+% to be altered:
+%   - loads same RDK setup for all participants during pilot phase: to allow for average plotting of topos and spectra
 
 % Christopher Gundlach,  Leipzig, 2025
 
@@ -228,6 +222,12 @@ end
 for i_rdk = 1:numel(RDK.RDK)
     RDK.RDK(i_rdk).id = i_rdk;
 end
+
+%%%% for pilot phase only | comment out afterwards
+% load RDK from VP01 to have stim freq, color and position the same across participants
+oldRdk = load('VP01_timing.mat');
+RDK = oldRdk.RDK;
+%%%%
 
 % initialize blank variables
 timing = []; button_presses = []; resp = []; randmat = [];
